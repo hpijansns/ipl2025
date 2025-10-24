@@ -6,16 +6,17 @@
 <title>Official IPL Match Ticket</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&family=Oswald:wght@500;700&family=Cutive+Mono&display=swap" rel="stylesheet">
 <style>
+/* --- 1. Global Setup and Variables --- */
 :root{
   --page-w:980px;
   --paper:#fffdf9;
   --muted:#666;
   --blue:#0b81d1;
   --blue-deep:#0468a8;
-  --highlight-color: #f84464; /* bookmyshow red */
+  --highlight-color: #f84464; /* BookMyShow Red */
 }
 body {
-  font-family:'Roboto', sans-serif; /* Changed to Roboto for consistency */
+  font-family:'Roboto', sans-serif;
   margin:0;
   min-height:100vh;
   display:flex;
@@ -25,6 +26,7 @@ body {
   background:#e0e0e0;
   padding:10px;
 }
+/* --- 2. The Main Ticket Container (General Styles are unchanged) --- */
 .ticket {
   width:95%;
   max-width:var(--page-w);
@@ -36,7 +38,8 @@ body {
   padding:25px;
   display:flex;
   flex-direction:column;
-  /* 💡 उन्नत सुरक्षा पैटर्न/वॉटरमार्क */
+  
+  /* 💡 Advanced Security Pattern/Watermark */
   background-image:
     linear-gradient(transparent 0, rgba(0,0,0,0.03) 1px),
     linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px),
@@ -46,18 +49,20 @@ body {
   clip-path: polygon(3% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 3% 100%, 0% 97%, 0% 3%);
 }
 .ticket::before{
-    content: "valid ticket ⚡ ipl 2025";
+    content: "VALID TICKET ⚡ IPL 2025";
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(-30deg);
-    font-family: 'Oswald', sans-serif; /* Added Oswald for impact */
+    font-family: 'Oswald', sans-serif;
     font-size: 8vw;
     font-weight: 900;
     color: rgba(248, 68, 100, 0.04);
     pointer-events: none;
     z-index: 1;
 }
+
+/* --- 3. Header Metadata --- */
 .meta-left, .meta-right{position:absolute; font-size:12px; color:var(--muted); line-height:1.12; z-index: 10;}
 .meta-left{left:22px; top:20px; text-align:left;}
 .meta-right{right:20px; top:20px; text-align:right;}
@@ -66,9 +71,11 @@ body {
 .meta-info.utr{left:22px; top:65px;}
 .meta-info.booking{right:20px; top:65px; text-align:right;}
 
-.top-center-price{position:absolute; left:50%; transform:translatex(-50%); top:20px; font-size:12px; color:var(--muted); text-align:center; line-height:1.15; z-index: 10;}
+.top-center-price{position:absolute; left:50%; transform:translateX(-50%); top:20px; font-size:12px; color:var(--muted); text-align:center; line-height:1.15; z-index: 10;}
 .top-center-price b{display:block; font-weight:900; color:#111; margin-top:3px; font-size:15px;}
 .top-center-price small {display:block; font-size:10px; color:var(--highlight-color); font-weight:700;}
+
+/* --- 4. Main Content (Match Details) --- */
 .main{display:flex; gap:16px; align-items:stretch; padding:40px 25px 20px 25px; position:relative; z-index: 2;}
 .left{width:290px; display:flex; flex-direction:column; align-items:center; gap:10px;}
 .left .biglogo{width:100%; min-height:130px; display:flex; align-items:center; justify-content:center; background:linear-gradient(145deg,#fdfdfd,#f0f0f0); border-radius:8px; overflow:hidden; box-shadow: inset 0 2px 6px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.2);}
@@ -84,18 +91,24 @@ body {
 .center .date{margin-top:8px; font-size:14px; color:#333; font-weight:600; text-align:center; border-bottom:1px dashed #ccc;}
 .center .stadium{margin-top:6px; font-size:13px; color:var(--muted); text-align:center;}
 
+/* --- 5. Stub Section (Barcode/QR) --- */
 .right{width:220px; display:flex; flex-direction:column; align-items:center; gap:10px; padding-left:15px; border-left:1px dashed rgba(0,0,0,0.2); background:linear-gradient(90deg, rgba(255,255,255,0.7), rgba(250,250,250,0.98));}
-.right .qr-box{width:100px; height:100px; border:3px solid #111; padding:5px; background: #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1);}
-.right .qr-box img{width:100%; height:100%;}
+.right .qr-box{width:110px; height:110px; border:3px solid #111; padding:5px; background: #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; justify-content: center; align-items: center;} /* Added flex center */
+/* canvas needs a wrapper in some browsers for correct sizing */
+.right .qr-box canvas { max-width: 100%; max-height: 100%; display: block; } 
+
 .right .mini-text{font-size:13px; color:#111; text-align:center; line-height:1.05; font-weight:700; margin-top:5px;}
 .right .barcode-box{margin-top:10px; padding:5px; border:1px solid #ddd; border-radius:4px; background:#fff;}
 .right .valid-if{font-size:8.5px; color:var(--highlight-color); text-align:center; font-weight:700; border:1px solid var(--highlight-color); padding:3px; margin-top:10px; border-radius:3px;}
 
+.perfor{position:absolute; right:245px; top:58px; height:190px; pointer-events:none; background:repeating-linear-gradient(to bottom, rgba(0,0,0,0.15) 0 2px, transparent 2px 6px); width:3px; border-radius:50%;}
+
+/* --- 6. Bottom Band (Key Details) --- */
 .bottom{margin-top:16px; background: linear-gradient(180deg, var(--blue), var(--blue-deep)); color:#fff; border-radius:8px; padding:15px 18px; display:flex; gap:12px; align-items:center; justify-content:space-between; font-weight:900; box-shadow: inset 0 -8px 15px rgba(0,0,0,0.3);}
 .bottom .cell{flex:1; text-align:center; font-size:20px;}
 .bottom .cell small{ display:block; font-size:11px; font-weight:700; opacity:0.95; margin-bottom:8px;}
 
-/* 💡 vip ticket gold effect */
+/* 💡 VIP Ticket Gold Effect */
 .vip-style .bottom {
     background: linear-gradient(180deg, #ffd700, #daa520);
     color: #333;
@@ -103,36 +116,31 @@ body {
 }
 .vip-style .bottom small { color: #666; opacity: 1;}
 .vip-style .meta-left b, .vip-style .meta-right b, .vip-style .top-center-price b {
-    color: #8b4513; /* brown for contrast */
+    color: #8b4513; /* Brown for contrast */
 }
 
-/* 💡 barcode/perforation styles */
-.perfor{position:absolute; right:245px; top:58px; height:190px; pointer-events:none; background:repeating-linear-gradient(to bottom, rgba(0,0,0,0.15) 0 2px, transparent 2px 6px); width:3px; border-radius:50%;}
-.notch{position:absolute; left:8px; bottom:78px; width:18px; height:18px; border-radius:50%; background:var(--blue); box-shadow:0 2px 6px rgba(0,0,0,0.35);}
-
-/* Mobile Responsiveness */
+/* --- 7. Mobile Responsiveness --- */
 @media (max-width:900px){
   .main{flex-direction:column; padding:20px;}
   .left, .center, .right{width:100%; text-align:center; padding-left:0; border-left:none;}
   .left .biglogo{width:80%; height:120px; margin:0 auto;}
-  .right{display:block; /* Changed to block for mobile */}
-  .right .qr-box, .right .barcode-box { margin: 10px auto; } /* Center QR and Barcode */
+  .right{display:block;} 
+  .right .qr-box, .right .barcode-box { margin: 10px auto; } 
   .bottom{flex-direction:column; gap:6px; font-size:16px;}
-  .gate-ghost{display:none;} /* Hide ghost gate on mobile */
+  .gate-ghost{display:none;} 
+  .perfor { display: none; }
   .meta-left, .meta-right, .meta-info.utr, .meta-info.booking, .top-center-price {
-    position: static; /* Remove absolute positioning on mobile */
+    position: static; 
     transform: none;
     text-align: center;
     margin: 5px 0;
     width: 100%;
   }
-  .meta-left b, .meta-right b { font-size: 14px; }
   .meta-left { border-bottom: 1px dashed #eee; padding-bottom: 10px; margin-bottom: 10px; }
-  .price-tag { margin: 10px 0; }
-  .top-center-price { margin-bottom: 15px; }
-  .bottom .cell { flex-basis: 100%; } /* Each item on its own row */
+  .bottom .cell { flex-basis: 100%; } 
 }
 
+/* --- 8. Download Button --- */
 #downloadbtn{
   margin-top:25px; padding:14px 25px; font-size:17px; font-weight:700; background:#0b81d1; color:#fff; border:none; border-radius:12px; cursor:pointer;
   transition: background 0.3s;
@@ -140,27 +148,28 @@ body {
 #downloadbtn:hover { background: #0468a8; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script> 
 </head>
 <body>
 
 <div class="ticket" id="ticket">
-  <div class="meta-left"><b id="sr-left">000001</b><b id="roll-left">001</b><div id="code-left">a000001</div></div>
-  <div class="meta-info utr">TICKET PRICE: <span id="basepricetext"></span></div> 
+  <div class="meta-left"><small>TICKET SERIAL NO.</small><b id="sr-left">000001</b><small>TICKET CODE</small><div id="code-left">A000001</div></div>
+  <div class="meta-info utr">PRICE BREAKDOWN: <span id="basepricetext"></span></div> 
 
   <div class="top-center-price"><small id="pricebreakup">INC. TAXES AND FEES</small><b>RS.<span id="totalprice">0</span></b></div>
   
-  <div class="meta-right"><b id="sr-right">000001</b><b id="roll-right">001</b><div id="code-right">a000001</div></div>
+  <div class="meta-right"><small>MATCH ID</small><b id="sr-right">000001</b><small>QTY.</small><b id="roll-right">001</b></div>
   <div class="meta-info booking">BOOKING ID: <span id="bookingid"></span></div> 
 
   <div class="main">
     <div class="left">
-      <div class="biglogo"><img id="leftlogo" src="" alt="team logo"></div>
+      <div class="biglogo"><img id="leftlogo" src="" alt="Team Logo"></div>
       <div class="teamname" id="leftteam"></div>
     </div>
     <div class="center">
       <div class="small-logos">
-        <div class="box"><img id="ipllogo" src="" alt="ipl"></div>
-        <div class="box"><img id="oppsmalllogo" src="" alt="opponent logo"></div>
+        <div class="box"><img id="ipllogo" src="" alt="IPL"></div>
+        <div class="box"><img id="oppsmalllogo" src="" alt="Opponent Logo"></div>
       </div>
       <div class="matchno" id="matchno"></div>
       <div class="teams" id="teamstext"></div>
@@ -169,7 +178,10 @@ body {
       <div class="gate-ghost" id="gateghost">1</div>
     </div>
     <div class="right">
-      <div class="qr-box"><img id="qrcode" src="" alt="qr code"></div> <div class="mini-text">TICKET CODE: <span id="ticketcode"></span></div>
+      <div class="qr-box">
+          <canvas id="qrcodeCanvas" width="100" height="100"></canvas>
+      </div> 
+      <div class="mini-text">TICKET CODE: <span id="ticketcode"></span></div>
       <div class="valid-if">VALID ONLY IF BARCODE & QR CODE ARE INTACT</div>
       <div class="barcode-box">
           <svg id="barcode"></svg>
@@ -191,20 +203,38 @@ body {
   </div>
 </div>
 
-<button id="downloadbtn">DOWNLOAD E-TICKET</button>
+<button id="downloadbtn">DOWNLOAD OFFICIAL E-TICKET</button>
 
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script> <script>
+
+<script>
 // --- Constants and Setup ---
 const DEFAULT_LOGO = "https://iili.io/K8L5Ots.jpg";
 const DEFAULT_IPL_LOGO = "https://upload.wikimedia.org/wikipedia/commons/3/3a/Indian_Premier_League_logo.svg";
 
-const ticketData = JSON.parse(localStorage.getItem('finalTicket'));
+// WARNING: Fallback Dummy Data for testing purposes if localStorage is empty
+let ticketData = JSON.parse(localStorage.getItem('finalTicket'));
 
 if(!ticketData || !ticketData.matchDetails){
-  alert("❌ Ticket data not found! Please ensure payment was completed.");
-  // window.location.href="index.html"; // Uncomment to redirect if data is missing
+  console.error("❌ Ticket data not found! Using dummy data.");
+  const dummyMatch = {
+    teams: 'Chennai Super Kings vs Mumbai Indians',
+    stadium: 'Wankhede Stadium, Mumbai',
+    date: '2025-05-15',
+    time: '19:30',
+    img1: 'https://iili.io/K8L5Ots.jpg',
+    img2: 'https://iili.io/Jc8702V.png'
+  };
+  ticketData = {
+      matchDetails: dummyMatch,
+      price: 2500,
+      qty: 1,
+      total: 2950,
+      seatType: 'Premium',
+      bookingId: 'BMS123456',
+      utr: '000000000000'
+  };
 }
 
 const match = ticketData.matchDetails;
@@ -213,18 +243,17 @@ const team1Name = teamsArray[0] || 'Team 1';
 const team2Name = teamsArray[1] || 'Team 2';
 const iplLogoUrl = localStorage.getItem('iplLogoURL') || DEFAULT_IPL_LOGO;
 
-// --- Complex Random Assignment for Ticket Details ---
+// --- Data Generation ---
 const ZONES = ['NORTH', 'SOUTH', 'EAST', 'WEST'];
 const TIERS_PREFIX = ['LOWER', 'UPPER', 'EXECUTIVE'];
 const ROW_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 const GATE = (Math.floor(Math.random() * 8) + 1).toString().padStart(2, '0');
 const ZONE = ZONES[Math.floor(Math.random() * ZONES.length)];
-const TIER_BLOCK = TIERS_PREFIX[Math.floor(Math.random() * TIERS_PREFIX.length)] + '-' + (Math.floor(Math.random() * 5) + 1);
+const TIER_BLOCK = TIERS_PREFIX[Math.floor(Math.random() * TIERS_PREFIX.length)].substring(0, 1) + (Math.floor(Math.random() * 5) + 1); 
 const ROW = ROW_LETTERS[Math.floor(Math.random() * ROW_LETTERS.length)];
 const SEAT_NO = (Math.floor(Math.random() * 50) + 1).toString().padStart(3, '0');
 
-// Calculate entry time (2.5 hours before match time)
 let matchStart = 'N/A';
 let entryTime = 'N/A';
 if (match.date && match.time) {
@@ -235,40 +264,39 @@ if (match.date && match.time) {
     }
 }
 
-// --- Ticket ID Generation ---
-const ticketTypeShort = ticketData.seatType.substring(0, 2).toUpperCase();
 const bookingPrefix = (ticketData.bookingId || 'IPL0000').slice(-6);
 const matchNo = (Math.floor(Math.random() * 50) + 1).toString().padStart(2, '0');
-const ticketNo = `M${matchNo}-${ZONE.substring(0,1)}${TIER_BLOCK.slice(-1)}-${ROW}${SEAT_NO}`; 
+const ticketNo = `M${matchNo}-${ZONE.substring(0,1)}${TIER_BLOCK}-${ROW}${SEAT_NO}`; 
 
 const uniqueBarcodeData = ticketData.utr || bookingPrefix + 'DUMMY123';
 const qrDataContent = `TKT-${ticketNo}-${ticketData.qty}-${match.date}-${bookingPrefix}`;
 
-
-// --- Price Breakdown (Realistic) ---
+// Price Breakdown
 const basePrice = ticketData.price;
-const taxesAndFees = Math.round(basePrice * 0.18); // 18% GST/fees
+const taxesAndFees = Math.round(basePrice * 0.18);
 const finalTotal = basePrice * ticketData.qty;
 
 // --- Ticket Population ---
 
-// 1. Header Metadata & IDs
+// 1. Apply VIP style
 const ticketElement = document.getElementById('ticket');
 if (ticketData.seatType.toLowerCase().includes('vip') || ticketData.seatType.toLowerCase().includes('corporate')) {
     ticketElement.classList.add('vip-style');
 }
 
+// 2. Header Metadata & IDs
 document.getElementById('sr-left').textContent = ticketNo;
-document.getElementById('sr-right').textContent = ticketNo;
+document.getElementById('sr-right').textContent = `Match ${matchNo}`;
+document.getElementById('roll-right').textContent = ticketData.qty;
+
 document.getElementById('code-left').textContent = `A${ticketNo.substring(ticketNo.length - 6)}`;
-document.getElementById('code-right').textContent = `A${ticketNo.substring(ticketNo.length - 6)}`;
-document.getElementById('ticketcode').textContent = qrDataContent.slice(0, 15) + '...'; /* Shortened for display */
+document.getElementById('ticketcode').textContent = qrDataContent.slice(0, 15) + '...'; 
+
 document.getElementById('basepricetext').textContent = `₹${basePrice} + ₹${taxesAndFees} (TAXES)`; 
 document.getElementById('bookingid').textContent = ticketData.bookingId || 'N/A';
 document.getElementById('totalprice').textContent = finalTotal;
 
-
-// 2. Main Center Content
+// 3. Main Center Content
 document.getElementById('leftlogo').src = match.img1 || DEFAULT_LOGO;
 document.getElementById('leftteam').textContent = team1Name;
 document.getElementById('ipllogo').src = iplLogoUrl; 
@@ -278,8 +306,7 @@ document.getElementById('teamstext').textContent = match.teams;
 document.getElementById('datetext').textContent = `DATE: ${match.date} | GATES OPEN: ${entryTime}`;
 document.getElementById('stadtext').textContent = match.stadium;
 
-
-// 3. Bottom Band (Randomized Data)
+// 4. Bottom Band (Key Data)
 document.getElementById('matchstart').textContent = matchStart;
 document.getElementById('entrytime').textContent = entryTime;
 document.getElementById('zone').textContent = ZONE;
@@ -287,10 +314,9 @@ document.getElementById('tier').textContent = TIER_BLOCK;
 document.getElementById('row').textContent = ROW;
 document.getElementById('seat').textContent = SEAT_NO;
 document.getElementById('gate').textContent = GATE;
-document.getElementById('gateghost').textContent = GATE; /* For the ghost effect */
+document.getElementById('gateghost').textContent = GATE;
 
-
-// 4. Barcode Generation
+// 5. Barcode Generation
 JsBarcode("#barcode", uniqueBarcodeData, {
     format: "CODE128",
     displayValue: false,
@@ -299,13 +325,12 @@ JsBarcode("#barcode", uniqueBarcodeData, {
     height: 50
 });
 
-
-// 💡 5. QR Code Generation (Using QRious)
+// 💡 6. QR Code Generation (Using QRious on CANVAS for maximum compatibility)
 new QRious({
-  element: document.getElementById('qrcode'),
+  element: document.getElementById('qrcodeCanvas'),
   value: qrDataContent,
-  size: 100, // Size of the QR code in pixels
-  level: 'H' // Error correction level
+  size: 100, 
+  level: 'H' 
 });
 
 
@@ -318,19 +343,23 @@ document.getElementById('downloadbtn').addEventListener('click', () => {
         return;
     }
     
-    document.getElementById('downloadbtn').style.display = 'none'; // Temporarily hide button
+    document.getElementById('downloadbtn').style.display = 'none'; 
     
-    html2canvas(document.getElementById('ticket'), { scale: 3 }).then(canvas => {
+    // Scale up the ticket for high-resolution PNG capture
+    html2canvas(document.getElementById('ticket'), { 
+        scale: 3,
+        useCORS: true // This helps with external images if they allow CORS
+    }).then(canvas => {
         const link = document.createElement('a');
         link.href = canvas.toDataURL('image/png');
         link.download = `IPL_E-TICKET_${ticketNo}.png`;
         link.click();
         
-        document.getElementById('downloadbtn').style.display = 'block'; // Show button again
+        document.getElementById('downloadbtn').style.display = 'block'; 
     });
 });
 
-// Load html2canvas script
+// Load html2canvas script dynamically for download function
 const html2canvasScript = document.createElement('script');
 html2canvasScript.src = "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";
 document.head.appendChild(html2canvasScript);
