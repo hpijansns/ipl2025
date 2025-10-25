@@ -5,7 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Booking Summary</title>
 <style>
-/* (सभी style same रखे जैसे पहले) */
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f7fa;
+  margin: 0;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.match-card, .box, .seat-map {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-width: 500px;
+  width: 100%;
+}
+h2 { text-align: center; margin-bottom: 10px; font-size: 22px; color: #222;}
+.match-card img { width: 100%; border-radius: 10px;}
+.teams { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 10px;}
+.teams img { width: 100px; height: 100px; object-fit: contain; border-radius: 10px;}
+.vs { font-size: 24px; font-weight: bold; color: #f84464;}
+.seat-map { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;}
+.seat-type { flex: 1 1 45%; text-align: center; padding: 12px; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s;}
+.seat-type.active { outline: 3px solid #000; transform: scale(1.05);}
+.general {background:#42a5f5;} .premium {background:#66bb6a;} .pavilion {background:#ffee58; color:#000;} 
+.vip {background:#ff7043;} .corporate {background:#e57373;} .hospitality {background:#ba68c8;} .skybox {background:#3949ab;}
+.description { background: #e3f2fd; border: 1px solid #64b5f6; padding: 10px; margin: 10px 0; display: none; border-radius: 6px;}
+.qty { margin-top: 10px;}
+.qty button { padding: 6px 10px; font-size: 16px;}
+.qty input { width: 40px; text-align: center; font-size: 16px;}
+.total { margin-top: 10px; font-size: 18px; font-weight: bold; color: #222;}
+.total span { color: #e53935; }
+.proceed-btn { width: 100%; background: #d32f2f; color: white; border: none; padding: 12px; font-size: 16px; border-radius: 6px; cursor: pointer;}
+.proceed-btn:hover { background: #b71c1c; }
+@media(max-width:600px){
+  .teams {flex-direction: column;}
+  .seat-type {flex: 1 1 80%;}
+}
 </style>
 </head>
 <body>
@@ -30,53 +69,34 @@
   <button class="proceed-btn" onclick="goToPayment()">Pay Now</button>
 </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 <script>
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "pl-project-f9be7.firebaseapp.com",
-  databaseURL: "https://pl-project-f9be7-default-rtdb.firebaseio.com",
-  projectId: "pl-project-f9be7",
-  storageBucket: "pl-project-f9be7.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
 const defaultImg = "https://iili.io/K8L5Ots.jpg";
 let selectedSeat = null;
 let price = 0;
 
-// Get match key from localStorage (set when user clicked Book)
-const matchKey = JSON.parse(localStorage.getItem("selectedMatchKey"));
+// Load selected match from localStorage
+const match = JSON.parse(localStorage.getItem("selectedMatch")) || {
+  teams: "Demo Match",
+  date: "2025-01-01",
+  time: "7:00 PM",
+  stadium: "Demo Stadium",
+  img1: defaultImg,
+  img2: defaultImg
+};
 
-// Fetch match from Firebase
-db.ref("matches/" + matchKey).once("value").then(snapshot=>{
-  const match = snapshot.val() || {
-    teams: "Demo Match",
-    date: "2025-01-01",
-    time: "7:00 PM",
-    stadium: "Demo Stadium",
-    img1: defaultImg,
-    img2: defaultImg
-  };
+// Show match details
+document.getElementById("details").innerHTML = `
+  <h2>${match.teams}</h2>
+  <p style="text-align:center;"><strong>Date:</strong> ${match.date} | <strong>Time:</strong> ${match.time}</p>
+  <p style="text-align:center;"><strong>Stadium:</strong> ${match.stadium}</p>
+  <div class="teams">
+    <img src="${match.img1 || defaultImg}" alt="Team 1">
+    <div class="vs">VS</div>
+    <img src="${match.img2 || defaultImg}" alt="Team 2">
+  </div>
+`;
 
-  document.getElementById("details").innerHTML = `
-    <h2>${match.teams}</h2>
-    <p style="text-align:center;"><strong>Date:</strong> ${match.date} | <strong>Time:</strong> ${match.time}</p>
-    <p style="text-align:center;"><strong>Stadium:</strong> ${match.stadium}</p>
-    <div class="teams">
-      <img src="${match.img1 || defaultImg}" alt="Team 1">
-      <div class="vs">VS</div>
-      <img src="${match.img2 || defaultImg}" alt="Team 2">
-    </div>
-  `;
-});
-
-// Seat types same as before
+// Seat types
 const seatTypes = [
   {name:"General Stand",price:1000,desc:"Affordable seating in upper stands.",class:"general"},
   {name:"Premium Stand",price:1500,desc:"Better view, closer to field.",class:"premium"},
@@ -87,6 +107,7 @@ const seatTypes = [
   {name:"Skybox",price:16000,desc:"Top premium view with food & drinks.",class:"skybox"}
 ];
 
+// Render seats
 const seatMap = document.getElementById("seatMap");
 seatTypes.forEach(seat=>{
   const div = document.createElement("div");
@@ -131,11 +152,12 @@ function goToPayment(){
     price,
     qty,
     total: price * qty,
-    matchKey: matchKey
+    matchDetails: match
   };
   localStorage.setItem("paymentInfo", JSON.stringify(paymentData));
   window.location.href = "payment.html"; 
 }
 </script>
+
 </body>
 </html>
