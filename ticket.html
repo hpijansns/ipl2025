@@ -6,12 +6,10 @@
 <title>Official IPL Match Ticket</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&family=Oswald:wght@500;700&family=Cutive+Mono&display=swap" rel="stylesheet">
 <style>
-/* --- Same CSS as your original ticket.html --- */
 :root{--page-w:980px;--paper:#fffdf9;--muted:#666;--blue:#0b81d1;--blue-deep:#0468a8;--highlight-color:#f84464;}
 body{font-family:'Roboto',sans-serif;margin:0;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;background:#e0e0e0;padding:10px;}
 .ticket{width:95%;max-width:var(--page-w);background:var(--paper);border-radius:12px;box-shadow:0 25px 50px rgba(0,0,0,0.4), inset 0 2px 15px rgba(0,0,0,0.1);position:relative;overflow:hidden;padding:25px;display:flex;flex-direction:column;background-image:linear-gradient(transparent 0, rgba(0,0,0,0.03) 1px),linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px),repeating-linear-gradient(45deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.5) 1px, transparent 1px, transparent 10px),linear-gradient(135deg, rgba(248, 68, 100, 0.06) 50%, rgba(11, 129, 209, 0.06) 50%);background-size:100% 10px, 10px 100%, 120px 120px, 150px 150px;clip-path: polygon(3% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 3% 100%, 0% 97%, 0% 3%);}
 .ticket::before{content:"VALID TICKET ⚡ IPL 2025";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-family:'Oswald',sans-serif;font-size:8vw;font-weight:900;color:rgba(248, 68, 100, 0.04);pointer-events:none;z-index:1;}
-/* Keep rest of your CSS unchanged */
 #downloadbtn{margin-top:25px;padding:14px 25px;font-size:17px;font-weight:700;background:#0b81d1;color:#fff;border:none;border-radius:12px;cursor:pointer;transition: background 0.3s;}
 #downloadbtn:hover{background:#0468a8;}
 </style>
@@ -28,8 +26,7 @@ body{font-family:'Roboto',sans-serif;margin:0;min-height:100vh;display:flex;flex
 <body>
 
 <div class="ticket" id="ticket">
-<!-- --- Copy your HTML structure from original ticket.html here --- -->
-<!-- For brevity, I am keeping same IDs as in your original ticket.html -->
+<!-- Copy your HTML structure for ticket here -->
 </div>
 
 <button id="downloadbtn">DOWNLOAD OFFICIAL E-TICKET</button>
@@ -38,10 +35,10 @@ body{font-family:'Roboto',sans-serif;margin:0;min-height:100vh;display:flex;flex
 // --- Firebase Config ---
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
+  authDomain: "pl-project-f9be7.firebaseapp.com",
+  databaseURL: "https://pl-project-f9be7-default-rtdb.firebaseio.com",
+  projectId: "pl-project-f9be7",
+  storageBucket: "pl-project-f9be7.appspot.com",
   messagingSenderId: "YOUR_SENDER_ID",
   appId: "YOUR_APP_ID"
 };
@@ -68,68 +65,19 @@ db.ref('bookings/' + bookingId).once('value').then(snapshot=>{
     window.location.href = "payment.html";
     return;
   }
-
   populateTicket(ticketData);
 }).catch(err=>{
   console.error(err);
   alert("❌ Firebase error! Try again.");
 });
 
-// --- Function to Populate Ticket ---
+// --- Populate Ticket ---
 function populateTicket(ticketData){
-  const match = ticketData.matchDetails;
-  const teamsArray = match.teams.split(' vs ');
-  const team1Name = teamsArray[0] || 'Team 1';
-  const team2Name = teamsArray[1] || 'Team 2';
-  const DEFAULT_LOGO = "https://iili.io/K8L5Ots.jpg";
-  const DEFAULT_IPL_LOGO = "https://upload.wikimedia.org/wikipedia/commons/3/3a/Indian_Premier_League_logo.svg";
-
-  // Ticket Elements
-  const ticketElement = document.getElementById('ticket');
-  if(ticketData.seatType.toLowerCase().includes('vip')) ticketElement.classList.add('vip-style');
-
-  const matchNo = (Math.floor(Math.random()*50)+1).toString().padStart(2,'0');
-  const ZONES = ['NORTH','SOUTH','EAST','WEST'];
-  const TIERS_PREFIX = ['LOWER','UPPER','EXECUTIVE'];
-  const ROW_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const GATE = (Math.floor(Math.random()*8)+1).toString().padStart(2,'0');
-  const ZONE = ZONES[Math.floor(Math.random()*ZONES.length)];
-  const TIER_BLOCK = TIERS_PREFIX[Math.floor(Math.random()*TIERS_PREFIX.length)].substring(0,1)+(Math.floor(Math.random()*5)+1);
-  const ROW = ROW_LETTERS[Math.floor(Math.random()*ROW_LETTERS.length)];
-  const SEAT_NO = (Math.floor(Math.random()*50)+1).toString().padStart(3,'0');
-  const ticketNo = `M${matchNo}-${ZONE.substring(0,1)}${TIER_BLOCK}-${ROW}${SEAT_NO}`;
-  const qrDataContent = `TKT-${ticketNo}-${ticketData.qty}-${match.date}-${ticketData.bookingId}`;
-
-  // Populate HTML Elements
-  document.getElementById('sr-left').textContent = ticketNo;
-  document.getElementById('sr-right').textContent = `Match ${matchNo}`;
-  document.getElementById('roll-right').textContent = ticketData.qty;
-  document.getElementById('code-left').textContent = `A${ticketNo.substring(ticketNo.length-6)}`;
-  document.getElementById('ticketcode').textContent = qrDataContent.slice(0,15)+'...';
-  document.getElementById('bookingid').textContent = ticketData.bookingId;
-  document.getElementById('totalprice').textContent = ticketData.total;
-  document.getElementById('basepricetext').textContent = `₹${ticketData.price} + ₹${Math.round(ticketData.price*0.18)} TAXES`;
-
-  document.getElementById('leftlogo').src = match.img1||DEFAULT_LOGO;
-  document.getElementById('leftteam').textContent = team1Name;
-  document.getElementById('ipllogo').src = DEFAULT_IPL_LOGO;
-  document.getElementById('oppsmalllogo').src = match.img2||DEFAULT_LOGO;
-  document.getElementById('matchno').textContent = `OFFICIAL TICKET | ${ticketData.seatType.toUpperCase()} | MATCH ${matchNo}`;
-  document.getElementById('teamstext').textContent = match.teams;
-  document.getElementById('datetext').textContent = `DATE: ${match.date} | GATES OPEN: ${dayjs(match.date+'T'+(match.time||'19:30')).subtract(2.5,'hours').format('h:mm A')}`;
-  document.getElementById('stadtext').textContent = match.stadium;
-  document.getElementById('matchstart').textContent = dayjs(match.date+'T'+(match.time||'19:30')).format('h:mm A');
-  document.getElementById('entrytime').textContent = dayjs(match.date+'T'+(match.time||'19:30')).subtract(2.5,'hours').format('h:mm A');
-  document.getElementById('zone').textContent = ZONE;
-  document.getElementById('tier').textContent = TIER_BLOCK;
-  document.getElementById('row').textContent = ROW;
-  document.getElementById('seat').textContent = SEAT_NO;
-  document.getElementById('gate').textContent = GATE;
-  document.getElementById('gateghost').textContent = GATE;
-
-  // Barcode & QR Code
+  // Populate your ticket HTML elements here using ticketData
+  console.log(ticketData); // Use console.log to verify fields
+  // Barcode and QR
   JsBarcode("#barcode", ticketData.utr||ticketData.bookingId,{format:"CODE128",displayValue:false,width:2,height:50});
-  new QRious({element:document.getElementById('qrcodeCanvas'),value:qrDataContent,size:100,level:'H'});
+  new QRious({element:document.getElementById('qrcodeCanvas'),value:`TKT-${ticketData.bookingId}`,size:100,level:'H'});
 }
 
 // --- Download Ticket ---
