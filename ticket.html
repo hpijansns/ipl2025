@@ -10,40 +10,37 @@
 body{font-family:'Roboto',sans-serif;margin:0;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;background:#e0e0e0;padding:10px;}
 .ticket{width:95%;max-width:var(--page-w);background:var(--paper);border-radius:12px;box-shadow:0 25px 50px rgba(0,0,0,0.4), inset 0 2px 15px rgba(0,0,0,0.1);position:relative;overflow:hidden;padding:25px;display:flex;flex-direction:column;background-image:linear-gradient(transparent 0, rgba(0,0,0,0.03) 1px),linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px),repeating-linear-gradient(45deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.5) 1px, transparent 1px, transparent 10px),linear-gradient(135deg, rgba(248, 68, 100, 0.06) 50%, rgba(11, 129, 209, 0.06) 50%);background-size:100% 10px, 10px 100%, 120px 120px, 150px 150px;clip-path: polygon(3% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 3% 100%, 0% 97%, 0% 3%);}
 .ticket::before{content:"VALID TICKET ⚡ IPL 2025";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-family:'Oswald',sans-serif;font-size:8vw;font-weight:900;color:rgba(248, 68, 100, 0.04);pointer-events:none;z-index:1;}
-.ticket img{max-width:80px;margin:5px;}
-.ticket h2{text-align:center;margin:0 0 15px;}
-.ticket p{margin:4px 0;font-weight:500;}
 #downloadbtn{margin-top:25px;padding:14px 25px;font-size:17px;font-weight:700;background:#0b81d1;color:#fff;border:none;border-radius:12px;cursor:pointer;transition: background 0.3s;}
 #downloadbtn:hover{background:#0468a8;}
 </style>
+
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 </head>
 <body>
 
 <div class="ticket" id="ticket">
-  <h2 id="matchTitle">Loading Ticket...</h2>
-  <div style="text-align:center;">
-    <img id="leftlogo" src="" alt="Team 1">
-    <img id="ipllogo" src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Indian_Premier_League_logo.svg" alt="IPL Logo">
-    <img id="oppsmalllogo" src="" alt="Team 2">
-  </div>
-  <p id="matchInfo"></p>
-  <p><strong>Seat Type:</strong> <span id="seatType"></span> | <strong>Qty:</strong> <span id="qty"></span></p>
-  <p><strong>Booking ID:</strong> <span id="bookingid"></span></p>
-  <p><strong>Total Amount:</strong> ₹<span id="totalprice"></span></p>
-  <canvas id="qrcodeCanvas"></canvas>
+  <!-- Ticket HTML structure -->
+  <h2 id="matchName"></h2>
+  <p id="matchDetails"></p>
+  <p><strong>Seat Type:</strong> <span id="seatType"></span></p>
+  <p><strong>Quantity:</strong> <span id="quantity"></span></p>
+  <p><strong>Total Price:</strong> ₹<span id="totalPrice"></span></p>
   <svg id="barcode"></svg>
+  <canvas id="qrcodeCanvas"></canvas>
 </div>
 
 <button id="downloadbtn">DOWNLOAD OFFICIAL E-TICKET</button>
 
 <script>
-// Firebase Config
+// --- Firebase Config ---
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "pl-project-f9be7.firebaseapp.com",
@@ -56,50 +53,54 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Get bookingId from URL
-const params = new URLSearchParams(window.location.search);
-const bookingId = params.get('bookingId');
+// --- Get bookingId from URL ---
+function getBookingIdFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('bookingId') || null;
+}
+
+const bookingId = getBookingIdFromURL();
 if(!bookingId){
   alert("❌ Booking ID missing! Cannot fetch ticket.");
   window.location.href = "payment.html";
 }
 
-// Fetch ticket data
+// --- Fetch Ticket Data from Firebase ---
 db.ref('bookings/' + bookingId).once('value').then(snapshot=>{
-  const ticket = snapshot.val();
-  if(!ticket){
-    alert("❌ Ticket not found! Complete payment first.");
+  const ticketData = snapshot.val();
+  if(!ticketData){
+    alert("❌ Ticket not found! Please complete payment.");
     window.location.href = "payment.html";
     return;
   }
-
-  const match = ticket.matchDetails;
-  document.getElementById('matchTitle').textContent = match.teams;
-  document.getElementById('matchInfo').textContent = `${match.date} | ${match.time || '—'} | ${match.stadium}`;
-  document.getElementById('leftlogo').src = match.img1 || "https://iili.io/K8L5Ots.jpg";
-  document.getElementById('oppsmalllogo').src = match.img2 || "https://iili.io/K8L5Ots.jpg";
-  document.getElementById('seatType').textContent = ticket.seatType;
-  document.getElementById('qty').textContent = ticket.qty;
-  document.getElementById('bookingid').textContent = ticket.bookingId;
-  document.getElementById('totalprice').textContent = ticket.total;
-
-  // Barcode & QR
-  JsBarcode("#barcode", ticket.utr||ticket.bookingId,{format:"CODE128",displayValue:false,width:2,height:50});
-  new QRious({element:document.getElementById('qrcodeCanvas'),value:`TKT-${ticket.bookingId}-${ticket.qty}`,size:120,level:'H'});
+  populateTicket(ticketData);
+}).catch(err=>{
+  console.error(err);
+  alert("❌ Firebase error! Try again.");
 });
 
-// Download Ticket
+// --- Populate Ticket ---
+function populateTicket(ticketData){
+  document.getElementById('matchName').textContent = ticketData.matchDetails.teams || "Demo Match";
+  document.getElementById('matchDetails').textContent = `Date: ${ticketData.matchDetails.date} | Time: ${ticketData.matchDetails.time || "7:00 PM"} | Stadium: ${ticketData.matchDetails.stadium}`;
+  document.getElementById('seatType').textContent = ticketData.seatType;
+  document.getElementById('quantity').textContent = ticketData.qty;
+  document.getElementById('totalPrice').textContent = ticketData.total;
+
+  // Barcode
+  JsBarcode("#barcode", ticketData.utr || ticketData.bookingId, {format:"CODE128", displayValue:false, width:2, height:50});
+
+  // QR Code
+  new QRious({element:document.getElementById('qrcodeCanvas'), value:`TKT-${ticketData.bookingId}`, size:100, level:'H'});
+}
+
+// --- Download Ticket ---
 document.getElementById('downloadbtn').addEventListener('click',()=>{
   confetti({particleCount:150,spread:70,origin:{y:0.6}});
   if(typeof html2canvas==='undefined'){
-    const s=document.createElement('script');
-    s.src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";
-    s.onload=()=>downloadTicket();
-    document.head.appendChild(s);
-  }else downloadTicket();
-});
-
-function downloadTicket(){
+    alert("Please wait, loading download tools...");
+    return;
+  }
   document.getElementById('downloadbtn').style.display='none';
   html2canvas(document.getElementById('ticket'),{scale:3,useCORS:true}).then(canvas=>{
     const link=document.createElement('a');
@@ -108,7 +109,10 @@ function downloadTicket(){
     link.click();
     document.getElementById('downloadbtn').style.display='block';
   });
-}
+});
+const html2canvasScript=document.createElement('script');
+html2canvasScript.src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";
+document.head.appendChild(html2canvasScript);
 </script>
 
 </body>
