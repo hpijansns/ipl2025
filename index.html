@@ -6,95 +6,31 @@
 <title>IPL Ticket Booking</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
+/* Same CSS as before */
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Roboto',sans-serif;}
 html,body{background:#fff;width:100%;}
-header{
-    width:100%;
-    background:#333545;
-    color:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:10px 20px;
-    position:sticky;
-    top:0;
-    z-index:1000;
-}
+header{width:100%;background:#333545;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:10px 20px;position:sticky;top:0;z-index:1000;}
 header img.logo{height:40px;}
 .nav-links a{color:#fff;text-decoration:none;margin:0 10px;font-size:14px;}
 .nav-links a:hover{text-decoration:underline;}
-.header-banner img{
-  width:100%;
-  height: auto; 
-  aspect-ratio: 5.72 / 1; 
-  object-fit: cover; 
-  display:block;
-  border-bottom:4px solid #f84464;
-  border-radius:5px;
-}
+.header-banner img{width:100%;height:auto;aspect-ratio:5.72/1;object-fit:cover;display:block;border-bottom:4px solid #f84464;border-radius:5px;}
 .matches-section{padding:20px;}
-.matches-section h2{color:#000;font-size:22px;margin-bottom:20px;font-weight:700; text-align:center;}
-.cards-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-}
-.card {
-  background:#fff;
-  border-radius:10px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.15);
-  transition:0.3s;
-  display:flex;
-  flex-direction:column;
-  cursor:pointer;
-}
+.matches-section h2{color:#000;font-size:22px;margin-bottom:20px;font-weight:700;text-align:center;}
+.cards-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;}
+.card{background:#fff;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.15);transition:0.3s;display:flex;flex-direction:column;cursor:pointer;}
 .card:hover{transform:scale(1.03);}
-.card .team-vs{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:15px;
-}
-.card .team-vs img{
-  width:120px;
-  height:120px;
-  object-fit:contain;
-  border-radius:8px;
-}
-.card .team-vs .vs{
-  width:60px;
-  text-align:center;
-  font-weight:bold;
-  font-size:28px;
-  color:#f84464;
-  margin:0 10px;
-}
-.card-body {
-  padding:15px;
-  text-align:center;
-}
-.card-body h3 {font-size:16px;color:#000;margin-bottom:8px;}
-.card-body p {font-size:14px;color:#555;margin-bottom:5px;}
-.card-body button {
-  width:100%;
-  padding:8px 0;
-  background:#f84464;
-  color:#fff;
-  border:none;
-  border-radius:5px;
-  cursor:pointer;
-  font-size:15px;
-}
+.card .team-vs{display:flex;justify-content:center;align-items:center;padding:15px;}
+.card .team-vs img{width:120px;height:120px;object-fit:contain;border-radius:8px;}
+.card .team-vs .vs{width:60px;text-align:center;font-weight:bold;font-size:28px;color:#f84464;margin:0 10px;}
+.card-body{padding:15px;text-align:center;}
+.card-body h3{font-size:16px;color:#000;margin-bottom:8px;}
+.card-body p{font-size:14px;color:#555;margin-bottom:5px;}
+.card-body button{width:100%;padding:8px 0;background:#f84464;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:15px;}
 .card-body button:hover{background:#c4242b;}
 footer{background:#333545;color:#fff;padding:20px;text-align:center;}
 footer a{color:#fff;text-decoration:none;margin:0 10px;font-size:12px;}
 footer a:hover{text-decoration:underline;}
-@media(max-width:600px){
-  .cards-container{grid-template-columns:1fr;}
-  .card .team-vs img{width:100px;height:100px;}
-  .card .team-vs .vs{font-size:24px;width:50px;}
-  .header-banner img{aspect-ratio: 5.72 / 1;} 
-}
+@media(max-width:600px){.cards-container{grid-template-columns:1fr;}.card .team-vs img{width:100px;height:100px;}.card .team-vs .vs{font-size:24px;width:50px;}.header-banner img{aspect-ratio:5.72/1;}}
 </style>
 </head>
 <body>
@@ -114,7 +50,7 @@ footer a:hover{text-decoration:underline;}
 <div class="matches-section">
 <h2>Upcoming IPL Matches</h2>
 <div class="cards-container" id="matches-container"></div>
-<p id="no-matches" style="text-align: center; color: #555; margin-top: 20px; display: none;">No upcoming matches available. Please check back later.</p>
+<p id="no-matches" style="text-align:center;color:#555;margin-top:20px;display:none;">No upcoming matches available. Please check back later.</p>
 </div>
 
 <footer>
@@ -122,76 +58,69 @@ footer a:hover{text-decoration:underline;}
 </footer>
 
 <!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
+// Firebase config
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "pl-project-f9be7.firebaseapp.com",
-  databaseURL: "https://pl-project-f9be7-default-rtdb.firebaseio.com",
+  databaseURL: "https://pl-project-f9be7-default-rtdb.firebaseio.com/",
   projectId: "pl-project-f9be7",
   storageBucket: "pl-project-f9be7.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  messagingSenderId: "SENDER_ID",
+  appId: "APP_ID"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 const defaultImg = "https://iili.io/K8L5Ots.jpg";
-const container = document.getElementById('matches-container');
-const noMatches = document.getElementById('no-matches');
+const bannerImg = document.getElementById("banner-img");
 
-// Load Banner from Firebase
-db.ref("bannerURL").on("value", snapshot=>{
-    const bannerUrl = snapshot.val() || defaultImg;
-    document.getElementById('banner-img').src = bannerUrl;
+// Load Banner
+db.ref("banner").once("value").then(snap=>{
+  const url = snap.val() || defaultImg;
+  bannerImg.src = url;
 });
 
-// Load Matches from Firebase
-function loadMatches(){
-    db.ref("matches").on("value", snapshot=>{
-        const data = snapshot.val();
-        container.innerHTML = "";
-        if(!data){
-            noMatches.style.display='block';
-            return;
-        }
-        noMatches.style.display='none';
-        for(const key in data){
-            const match = data[key];
-            const img1Src = match.img1 || defaultImg;
-            const img2Src = match.img2 || defaultImg;
-            
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                <div class="team-vs">
-                  <img src="${img1Src}" alt="Team1">
-                  <div class="vs">VS</div>
-                  <img src="${img2Src}" alt="Team2">
-                </div>
-                <div class="card-body">
-                  <h3>${match.teams}</h3>
-                  <p><strong>Date:</strong> ${match.date}</p>
-                  <p><strong>Time:</strong> ${match.time || '—'}</p>
-                  <p><strong>Stadium:</strong> ${match.stadium}</p>
-                  <button onclick="bookMatch('${key}')">Book</button>
-                </div>
-            `;
-            container.appendChild(card);
-        }
-    });
-}
+// Load Matches
+const container = document.getElementById("matches-container");
+const noMatches = document.getElementById("no-matches");
 
-function bookMatch(key){
-    db.ref("matches/"+key).once("value").then(snapshot=>{
-        localStorage.setItem('selectedMatch', JSON.stringify(snapshot.val()));
-        window.location.href="match-details.html";
-    });
-}
+db.ref("matches").on("value", snap=>{
+  container.innerHTML = "";
+  const data = snap.val();
+  if(!data){ noMatches.style.display="block"; return; }
+  noMatches.style.display="none";
+  Object.values(data).forEach((m,index)=>{
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="team-vs">
+        <img src="${m.img1 || defaultImg}" alt="Team1">
+        <div class="vs">VS</div>
+        <img src="${m.img2 || defaultImg}" alt="Team2">
+      </div>
+      <div class="card-body">
+        <h3>${m.teams}</h3>
+        <p><strong>Date:</strong> ${m.date}</p>
+        <p><strong>Time:</strong> ${m.time || '—'}</p>
+        <p><strong>Stadium:</strong> ${m.stadium}</p>
+        <button onclick="bookMatch(${index})">Book</button>
+      </div>`;
+    container.appendChild(card);
+  });
+});
 
-loadMatches();
+function bookMatch(index){
+  db.ref("matches").once("value").then(snap=>{
+    const matches = Object.values(snap.val());
+    localStorage.setItem("selectedMatch", JSON.stringify(matches[index]));
+    window.location.href="match-details.html";
+  });
+}
 </script>
 
 </body>
-    </html>
+</html>
