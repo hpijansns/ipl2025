@@ -141,6 +141,30 @@ function previewImage(input, previewId){
   else { preview.src=""; preview.style.display="none"; }
 }
 
+// --- Save Banner ---
+document.getElementById("bannerForm").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const file = document.getElementById("bannerInput").files[0];
+  if(!file){ alert("Select a banner image"); return; }
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    db.ref("settings/banner").set(reader.result).then(()=>alert("Banner saved!"));
+  };
+  reader.readAsDataURL(file);
+});
+
+// --- Save IPL Logo ---
+document.getElementById("logoForm").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const file = document.getElementById("logoInput").files[0];
+  if(!file){ alert("Select a logo image"); return; }
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    db.ref("settings/iplLogo").set(reader.result).then(()=>alert("Logo saved!"));
+  };
+  reader.readAsDataURL(file);
+});
+
 // --- Save Matches ---
 async function saveMatch(e){
   e.preventDefault();
@@ -227,4 +251,4 @@ document.addEventListener("DOMContentLoaded", ()=>{
 });
 </script>
 </body>
-  </html>
+</html>
