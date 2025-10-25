@@ -19,7 +19,7 @@ th,td{border:1px solid #ccc;padding:8px;text-align:center;}
 img.preview{width:50px;height:50px;object-fit:contain;border-radius:5px;}
 button.edit{background:#4caf50;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;}
 button.edit:hover{background:#388e3c;}
-button.delete{background:#f44336;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;}
+button.delete{background:#f44336;color:#fff;border:none;padding:5px 10px;border-radius:5px;font-size:12px;}
 button.delete:hover{background:#c4242b;}
 #loginBox{background:#fff;padding:20px;border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,0.2);width:90%;max-width:350px;margin:50px auto;text-align:center;}
 #loginBox input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:1px solid #ccc;}
@@ -30,14 +30,16 @@ input[type="text"][id$="_url"] { background: #ffebee; border-color: #f84464; }
 </head>
 <body>
 
+<!-- LOGIN BOX -->
 <div id="loginBox">
 <h2>Admin Login</h2>
 <input type="text" id="username" placeholder="Phone / Username">
 <input type="password" id="password" placeholder="Password">
-<button onclick="login()">Login</button>
+<button type="button" onclick="login()">Login</button>
 <p style="font-size:12px;color:#666;margin-top:10px;">Demo: <strong>7627055204</strong> / <strong>Pooja2005</strong></p>
 </div>
 
+<!-- DASHBOARD -->
 <div class="container" id="dashboard" style="display:none;">
 <header>
 <h3>Admin Dashboard - <span id="adminUser"></span></h3>
@@ -68,11 +70,11 @@ input[type="text"][id$="_url"] { background: #ffebee; border-color: #f84464; }
 <input type="text" id="stadium" placeholder="Stadium" required>
 
 <label>Team1 Image (Upload or URL):</label>
-<input type="file" id="img1_file" accept="image/*" onchange="previewImage(this, 'preview1')">
+<input type="file" id="img1_file" accept="image/*" onchange="previewImage(this,'preview1')">
 <input type="text" id="img1_url" placeholder="Paste Image URL for Team 1">
 
 <label>Team2 Image (Upload or URL):</label>
-<input type="file" id="img2_file" accept="image/*" onchange="previewImage(this, 'preview2')">
+<input type="file" id="img2_file" accept="image/*" onchange="previewImage(this,'preview2')">
 <input type="text" id="img2_url" placeholder="Paste Image URL for Team 2">
 
 <img id="preview1" class="preview" style="display:none;"> 
@@ -90,227 +92,139 @@ input[type="text"][id$="_url"] { background: #ffebee; border-color: #f84464; }
 </table>
 </div>
 
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 <script>
-const ADMIN_USER = "7627055204", ADMIN_PASS = "Pooja2005";
-let editIndex=-1;
-let matches = JSON.parse(localStorage.getItem("iplMatches"))||[]; 
+// --- Firebase Config ---
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "pl-project-f9be7.firebaseapp.com",
+  databaseURL: "https://pl-project-f9be7-default-rtdb.firebaseio.com",
+  projectId: "pl-project-f9be7",
+  storageBucket: "pl-project-f9be7.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
+// --- Admin Credentials ---
+const ADMIN_USER = "7627055204";
+const ADMIN_PASS = "Pooja2005";
+let editKey = null;
+
+// --- Login & Logout ---
 function login(){
-  const u=document.getElementById("username").value.trim();
-  const p=document.getElementById("password").value.trim();
-  if(u===ADMIN_USER&&p===ADMIN_PASS){localStorage.setItem("isAdmin","true");localStorage.setItem("adminUser",ADMIN_USER);showDashboard();}
-  else alert("Invalid username or password");
+  const u = document.getElementById("username").value.trim();
+  const p = document.getElementById("password").value.trim();
+  if(u===ADMIN_USER && p===ADMIN_PASS){
+    localStorage.setItem("isAdmin","true");
+    showDashboard();
+  } else alert("Invalid username or password");
 }
-function logout(){localStorage.removeItem("isAdmin");localStorage.removeItem("adminUser");document.getElementById("dashboard").style.display="none";document.getElementById("loginBox").style.display="block";}
 
-function toBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=(err)=>reject(err);reader.readAsDataURL(file);});}
+function logout(){
+  localStorage.removeItem("isAdmin");
+  document.getElementById("dashboard").style.display="none";
+  document.getElementById("loginBox").style.display="block";
+}
 
+// --- Image Preview ---
+function previewImage(input, previewId){
+  const preview = document.getElementById(previewId);
+  if(input.files[0]){
+    const reader = new FileReader();
+    reader.onload = ()=>{preview.src=reader.result; preview.style.display="inline-block";};
+    reader.readAsDataURL(input.files[0]);
+  } else if(input.value.trim()){ preview.src=input.value.trim(); preview.style.display="inline-block"; }
+  else { preview.src=""; preview.style.display="none"; }
+}
+
+// --- Save Matches ---
+async function saveMatch(e){
+  e.preventDefault();
+  const teams = document.getElementById("teams").value.trim();
+  const date = document.getElementById("date").value;
+  const time = document.getElementById("time").value;
+  const stadium = document.getElementById("stadium").value.trim();
+  if(!teams||!date||!time||!stadium){ alert("Fill all fields"); return; }
+
+  let img1 = document.getElementById("img1_url").value.trim();
+  let img2 = document.getElementById("img2_url").value.trim();
+
+  const convertFileToBase64 = (file) => new Promise((res,rej)=>{
+    const reader = new FileReader();
+    reader.onload=()=>res(reader.result);
+    reader.onerror=err=>rej(err);
+    reader.readAsDataURL(file);
+  });
+
+  if(document.getElementById("img1_file").files[0])
+    img1 = await convertFileToBase64(document.getElementById("img1_file").files[0]);
+  if(document.getElementById("img2_file").files[0])
+    img2 = await convertFileToBase64(document.getElementById("img2_file").files[0]);
+
+  const matchData = {teams,date,time,stadium,img1,img2};
+
+  if(editKey){ await db.ref("matches/"+editKey).set(matchData); editKey=null; }
+  else await db.ref("matches").push(matchData);
+
+  document.getElementById("matchForm").reset();
+  renderTable();
+}
+
+// --- Render Matches ---
 function renderTable(){
-  const tableBody=document.getElementById("matchesTable");
+  const tableBody = document.getElementById("matchesTable");
   tableBody.innerHTML="";
-  const placeholderUrl = 'https://via.placeholder.com/50?text=Logo'; // Valid image URL for fallback
-  matches.forEach((m,i)=>{
-    tableBody.innerHTML+=`<tr>
-      <td>${i+1}</td>
-      <td>${m.teams}</td>
-      <td>${m.date}</td>
-      <td>${m.time}</td>
-      <td><small>${m.stadium}</small></td>
-      <td><img src="${m.img1 || placeholderUrl}" class="preview"></td>
-      <td><img src="${m.img2 || placeholderUrl}" class="preview"></td>
-      <td>
-        <button class="edit" onclick="editMatch(${i})">Edit</button>
-        <button class="delete" onclick="deleteMatch(${i})">Delete</button>
-      </td>
-    </tr>`;
+  db.ref("matches").once("value").then(snapshot=>{
+    const data = snapshot.val();
+    if(!data){ tableBody.innerHTML="<tr><td colspan='8'>No matches added</td></tr>"; return; }
+    let i=1;
+    for(const key in data){
+      const m = data[key];
+      tableBody.innerHTML += `<tr>
+      <td>${i}</td><td>${m.teams}</td><td>${m.date}</td><td>${m.time}</td><td>${m.stadium}</td>
+      <td><img src="${m.img1}" class="preview"></td><td><img src="${m.img2}" class="preview"></td>
+      <td><button onclick="editMatch('${key}')">Edit</button>
+          <button onclick="deleteMatch('${key}')">Delete</button></td></tr>`;
+      i++;
+    }
   });
 }
 
-function previewImage(input, previewId) {
-    const preview = document.getElementById(previewId);
-    let src = '';
-    
-    // Logic for file input (will generate Data URL)
-    if (input.type === 'file' && input.files[0]) {
-        const file = input.files[0];
-        const reader = new FileReader();
-        reader.onload = () => {
-            preview.src = reader.result;
-            preview.style.display = "inline-block";
-        };
-        reader.readAsDataURL(file);
-        return; // Exit here for file uploads
-    } 
-    
-    // Logic for text input (URL)
-    else if (input.type === 'text' && input.value.trim()) {
-        src = input.value.trim();
-    }
-    
-    // Set source and display for URL or clear if empty
-    if (src) {
-        preview.src = src;
-        preview.style.display = "inline-block";
-    } else {
-        preview.src = ''; 
-        preview.style.display = "none";
-    }
+// --- Edit/Delete ---
+function editMatch(key){
+  editKey = key;
+  db.ref("matches/"+key).once("value").then(snapshot=>{
+    const m = snapshot.val();
+    document.getElementById("teams").value = m.teams;
+    document.getElementById("date").value = m.date;
+    document.getElementById("time").value = m.time;
+    document.getElementById("stadium").value = m.stadium;
+    document.getElementById("img1_url").value = m.img1;
+    document.getElementById("img2_url").value = m.img2;
+    document.getElementById("preview1").src = m.img1; document.getElementById("preview1").style.display="inline-block";
+    document.getElementById("preview2").src = m.img2; document.getElementById("preview2").style.display="inline-block";
+  });
 }
 
-async function saveMatch(e){
-  e.preventDefault();
-  const teams=document.getElementById("teams").value.trim();
-  const date=document.getElementById("date").value;
-  const time=document.getElementById("time").value;
-  const stadium=document.getElementById("stadium").value.trim();
-  
-  if(!teams||!date||!time||!stadium){alert("Please fill all fields.");return;}
-  
-  let img1=editIndex>=0?matches[editIndex].img1:"";
-  let img2=editIndex>=0?matches[editIndex].img2:"";
-  
-  const img1Url = document.getElementById("img1_url").value.trim();
-  const img1File = document.getElementById("img1_file").files[0];
+function deleteMatch(key){ if(confirm("Delete this match?")) db.ref("matches/"+key).remove().then(()=>renderTable()); }
 
-  if (img1Url) {
-    img1 = img1Url;
-  } else if (img1File) {
-    try {img1=await toBase64(img1File);} catch (error) {console.error("Error converting img1:", error);}
-  }
-  
-  const img2Url = document.getElementById("img2_url").value.trim();
-  const img2File = document.getElementById("img2_file").files[0];
-
-  if (img2Url) {
-    img2 = img2Url;
-  } else if (img2File) {
-    try {img2=await toBase64(img2File);} catch (error) {console.error("Error converting img2:", error);}
-  }
-
-  const match={teams,date,time,stadium,img1,img2};
-  
-  if(editIndex>=0){matches[editIndex]=match;editIndex=-1;}else{matches.push(match);}
-  
-  localStorage.setItem("iplMatches",JSON.stringify(matches)); 
-  renderTable();
-  document.getElementById("matchForm").reset();
-  document.getElementById("preview1").style.display="none";
-  document.getElementById("preview2").style.display="none";
-  alert("Match saved successfully! Refresh the index.html page to see changes.");
-}
-
-
-function editMatch(index){
-  const m=matches[index];
-  document.getElementById("teams").value=m.teams;
-  document.getElementById("date").value=m.date;
-  document.getElementById("time").value=m.time;
-  document.getElementById("stadium").value=m.stadium;
-  
-  document.getElementById("img1_url").value = m.img1 && m.img1.startsWith('http') ? m.img1 : '';
-  document.getElementById("img2_url").value = m.img2 && m.img2.startsWith('http') ? m.img2 : '';
-
-  document.getElementById("preview1").src=m.img1;
-  document.getElementById("preview2").src=m.img2;
-  // FIXED: Ensure previews are shown if there's data
-  document.getElementById("preview1").style.display=m.img1?'inline-block':'none';
-  document.getElementById("preview2").style.display=m.img2?'inline-block':'none';
-  editIndex=index;
-}
-
-function deleteMatch(index){
-  if(confirm("Are you sure to delete this match?")){
-    matches.splice(index,1);
-    localStorage.setItem("iplMatches",JSON.stringify(matches));
-    renderTable();
-  }
-}
-
-// Banner Logic
-const bannerInput=document.getElementById("bannerInput");
-const bannerPreview=document.getElementById("bannerPreview");
-
-function loadBannerPreview() {
-    const savedBanner = localStorage.getItem("bannerURL");
-    if (savedBanner) {
-        bannerPreview.src = savedBanner;
-        bannerPreview.style.display = "inline-block";
-    } else {
-        // FIXED: Hide preview if no image is saved
-        bannerPreview.src = '';
-        bannerPreview.style.display = "none";
-    }
-}
-bannerInput.addEventListener("change",()=>{const file=bannerInput.files[0];if(file){const reader=new FileReader();reader.onload=()=>bannerPreview.src=reader.result;bannerPreview.style.display="inline-block";reader.readAsDataURL(file);}});
-
-document.getElementById("bannerForm").addEventListener("submit",e=>{
-  e.preventDefault();
-  if(bannerInput.files[0]){
-    const reader=new FileReader();
-    reader.onload=()=>{
-      localStorage.setItem("bannerURL",reader.result); 
-      alert("Banner saved successfully! Refresh the index.html page to see changes.");
-    };
-    reader.readAsDataURL(bannerInput.files[0]);
-  } else {alert("Select an image first.");}
-});
-
-// IPL Logo Logic
-const logoInput = document.getElementById("logoInput");
-const logoPreview = document.getElementById("logoPreview");
-
-function loadLogoPreview() {
-    const savedLogo = localStorage.getItem("iplLogoURL");
-    if (savedLogo) {
-        logoPreview.src = savedLogo;
-        logoPreview.style.display = "inline-block";
-    } else {
-        // FIXED: Hide preview if no image is saved
-        logoPreview.src = '';
-        logoPreview.style.display = "none";
-    }
-}
-logoInput.addEventListener("change",()=>{
-    const file = logoInput.files[0];
-    if(file){
-        const reader = new FileReader();
-        reader.onload = () => logoPreview.src = reader.result;
-        logoPreview.style.display = "inline-block";
-        reader.readAsDataURL(file);
-    }
-});
-
-document.getElementById("logoForm").addEventListener("submit",e=>{
-  e.preventDefault();
-  if(logoInput.files[0]){
-    const reader=new FileReader();
-    reader.onload=()=>{
-      localStorage.setItem("iplLogoURL",reader.result); 
-      alert("IPL Logo saved successfully!");
-    };
-    reader.readAsDataURL(logoInput.files[0]);
-  } else {alert("Select an image first.");}
-});
-
-
-document.getElementById("img1_url").addEventListener("input", function() { previewImage(this, 'preview1'); });
-document.getElementById("img2_url").addEventListener("input", function() { previewImage(this, 'preview2'); });
-
-
-document.addEventListener("DOMContentLoaded",()=>{
-  document.getElementById("matchForm").addEventListener("submit",saveMatch);
-  if(localStorage.getItem("isAdmin")==="true") showDashboard();
-});
-
+// --- Show Dashboard ---
 function showDashboard(){
   document.getElementById("loginBox").style.display="none";
   document.getElementById("dashboard").style.display="block";
-  document.getElementById("adminUser").textContent=localStorage.getItem("adminUser");
-  loadBannerPreview(); 
-  loadLogoPreview();
+  document.getElementById("adminUser").textContent="Admin";
   renderTable();
 }
-</script>
 
+// --- Login Check ---
+document.addEventListener("DOMContentLoaded", ()=>{
+  if(localStorage.getItem("isAdmin")==="true") showDashboard();
+  document.getElementById("matchForm").addEventListener("submit", saveMatch);
+});
+</script>
 </body>
   </html>
