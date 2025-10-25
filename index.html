@@ -6,7 +6,6 @@
 <title>IPL Ticket Booking</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* Same CSS as before */
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Roboto',sans-serif;}
 html,body{background:#fff;width:100%;}
 header{width:100%;background:#333545;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:10px 20px;position:sticky;top:0;z-index:1000;}
@@ -79,7 +78,7 @@ const defaultImg = "https://iili.io/K8L5Ots.jpg";
 const bannerImg = document.getElementById("banner-img");
 
 // Load Banner
-db.ref("banner").once("value").then(snap=>{
+db.ref("settings/banner").once("value").then(snap=>{
   const url = snap.val() || defaultImg;
   bannerImg.src = url;
 });
@@ -91,7 +90,10 @@ const noMatches = document.getElementById("no-matches");
 db.ref("matches").on("value", snap=>{
   container.innerHTML = "";
   const data = snap.val();
-  if(!data){ noMatches.style.display="block"; return; }
+  if(!data){ 
+    noMatches.style.display="block"; 
+    return; 
+  }
   noMatches.style.display="none";
   Object.values(data).forEach((m,index)=>{
     const card = document.createElement("div");
