@@ -18,11 +18,6 @@ body {margin:0;padding:0;font-family:'Roboto',sans-serif;background:#f0f0f0;colo
 input#utrInput{padding:12px;font-size:16px;width:90%;max-width:260px;border-radius:8px;border:1px solid #ccc;margin-top:15px;text-align:center;}
 button#payWithUTR{padding:14px 25px;font-size:16px;font-weight:700;border:none;border-radius:10px;cursor:pointer;color:#fff;background:linear-gradient(90deg,#4caf50,#43a047);margin-top:20px;transition:0.3s;}
 button#payWithUTR:hover{background:linear-gradient(90deg,#43a047,#388e3c);}
-@media(max-width:600px){
-.payment-box{padding:20px;}
-.qr-container img{width:150px;height:150px;}
-.payment-box h2{font-size:22px;}
-}
 </style>
 </head>
 <body>
@@ -47,7 +42,6 @@ button#payWithUTR:hover{background:linear-gradient(90deg,#43a047,#388e3c);}
   </div>
 </div>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -55,19 +49,17 @@ button#payWithUTR:hover{background:linear-gradient(90deg,#43a047,#388e3c);}
 // Firebase config
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
-  authDomain: "pl-project-f9be7.firebaseapp.com",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
   databaseURL: "https://pl-project-f9be7-default-rtdb.firebaseio.com",
-  projectId: "pl-project-f9be7",
-  storageBucket: "pl-project-f9be7.appspot.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
   messagingSenderId: "YOUR_SENDER_ID",
   appId: "YOUR_APP_ID"
 };
-
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Get ticket data from localStorage
+// Load selected ticket from localStorage
 const ticketData = JSON.parse(localStorage.getItem('paymentInfo'));
 if(!ticketData){ 
   alert("❌ कोई डेटा नहीं मिला, कृपया फिर से मैच बुक करें।");
@@ -93,19 +85,19 @@ document.getElementById('payWithUTR').addEventListener('click', ()=>{
   const utrRegex = /^\d{12}$/;
   
   if(!utrRegex.test(utr)){
-      alert("❌ कृपया मान्य 12 अंकों का UTR (Transaction ID) दर्ज करें।");
+      alert("❌ कृपया मान्य 12 अंकों का UTR दर्ज करें।");
       return;
   }
 
-  // Save to Firebase
+  // Save booking
   ticketData.utr = utr;
   ticketData.bookingId = 'IPL' + Date.now().toString().slice(-6); 
 
-  const newRef = db.ref('bookings/' + ticketData.bookingId);
-  newRef.set(ticketData)
+  db.ref('bookings/' + ticketData.bookingId).set(ticketData)
     .then(()=>{
         alert(`✅ Payment Successful! Booking ID: ${ticketData.bookingId}`);
-        window.location.href = "ticket.html";
+        // Redirect with bookingId
+        window.location.href = `ticket.html?bookingId=${ticketData.bookingId}`;
     })
     .catch((err)=>{
         console.error(err);
