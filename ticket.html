@@ -175,8 +175,9 @@ body {
 // --- Ticket Data Initialization ---
 const DEFAULT_LOGO = "https://iili.io/K8L5Ots.jpg";
 const DEFAULT_IPL_LOGO = "https://upload.wikimedia.org/wikipedia/commons/3/3a/Indian_Premier_League_logo.svg";
+const DEMO_KEY = 'currentBookingData';
 
-// Fallback/Default Data (only used if nothing is found in local storage)
+// Fallback/Default Data (only used if nothing is found)
 const defaultTicketData = {
     matchDetails: {
         teams: "Delhi Capitals vs Royal Challengers Bangalore",
@@ -202,11 +203,11 @@ const defaultTicketData = {
     }
 };
 
-// **मुख्य परिवर्तन:** हम सीधे 'finalTicket' से डेटा लोड कर रहे हैं।
-let ticketData = JSON.parse(localStorage.getItem('finalTicket'));
+// **मुख्य परिवर्तन:** हम sessionStorage से डेटा लोड कर रहे हैं।
+let ticketData = JSON.parse(sessionStorage.getItem(DEMO_KEY));
 
 if (!ticketData || !ticketData.seatDetails) {
-    console.warn("Could not find ticket data in finalTicket key, loading default data.");
+    console.warn("Could not find ticket data in sessionStorage, loading default data.");
     ticketData = defaultTicketData;
 }
 
@@ -243,6 +244,7 @@ const uniqueBarcodeData = ticketData.utr;
 
 // Price Breakdown
 const basePrice = ticketData.price;
+// Taxes/Fees calculation using the total price saved from the payment page
 const taxesAndFees = Math.round(ticketData.total - (basePrice * ticketData.qty)); 
 const finalTotal = ticketData.total;
 
@@ -310,6 +312,7 @@ document.getElementById('downloadbtn').addEventListener('click',()=>{
         link.href = canvas.toDataURL('image/png');
         link.download = `IPL_E-TICKET_${ticketNo}.png`;
         link.click();
+        // sessionStorage.removeItem(DEMO_KEY); // Remove data after download
         document.getElementById('downloadbtn').style.display='block';
     });
 });
