@@ -6,6 +6,7 @@
 <title>Official IPL Match Ticket</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&family=Oswald:wght@500;700&family=Cutive+Mono&display=swap" rel="stylesheet">
 <style>
+/* --- STYLES --- */
 :root{
   --page-w:980px;
   --paper:#fffdf9;
@@ -117,6 +118,7 @@ body {
   transition: background 0.3s;
 }
 #downloadbtn:hover { background: #0468a8; }
+/* --- END STYLES --- */
 </style>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
@@ -170,27 +172,25 @@ body {
 </div>
 
 <button id="downloadbtn">DOWNLOAD OFFICIAL E-TICKET</button>
-
 <script>
 // --- Ticket Data Initialization ---
-const DEFAULT_LOGO = "https://iili.io/K8L5Ots.jpg";
 const DEFAULT_IPL_LOGO = "https://upload.wikimedia.org/wikipedia/commons/3/3a/Indian_Premier_League_logo.svg";
 const DEMO_KEY = 'currentBookingData';
 
-// Fallback/Default Data (only used if nothing is found)
+// Fallback/Default Data (DUMMY DATA - NO IMAGE URLS HERE)
 const defaultTicketData = {
     matchDetails: {
-        teams: "Delhi Capitals vs Royal Challengers Bangalore",
-        stadium: "Feroz Shah Kotla, Delhi",
-        date: "2025-04-10",
-        time: "20:00",
-        img1: "https://iili.io/Jc8702V.png",
-        img2: "https://iili.io/K8L5Ots.jpg"
+        teams: "Chennai Super Kings vs Mumbai Indians", 
+        stadium: "M. A. Chidambaram Stadium, Chennai",  
+        date: "2025-04-10",                           
+        time: "20:00",                                
+        img1: "", 
+        img2: "" 
     },
     price: 1500,
     qty: 1,
     total: 1900,
-    seatType: "General",
+    seatType: "General Stand",
     bookingId: "DUMMY123",
     utr: "000000000000",
     seatDetails: {
@@ -203,7 +203,6 @@ const defaultTicketData = {
     }
 };
 
-// हम sessionStorage से डेटा लोड कर रहे हैं।
 let ticketData = JSON.parse(sessionStorage.getItem(DEMO_KEY));
 
 if (!ticketData || !ticketData.seatDetails) {
@@ -253,7 +252,7 @@ if(ticketData.seatType.toLowerCase().includes('vip')){
     ticketElement.classList.add('vip-style');
 }
 
-// --- Display Data ---
+// --- DISPLAY DATA ---
 
 // Header Metadata
 document.getElementById('sr-left').textContent = ticketNo;
@@ -266,10 +265,13 @@ document.getElementById('bookingid').textContent = ticketData.bookingId || 'N/A'
 document.getElementById('totalprice').textContent = finalTotal;
 
 // Main Center Content
-document.getElementById('leftlogo').src = match.img1 || DEFAULT_LOGO;
+// इमेज सीधे डेटा से लोड होंगी। अगर वे खाली हैं तो टूटी हुई दिखेंगी।
+document.getElementById('leftlogo').src = match.img1;
 document.getElementById('leftteam').textContent = team1Name;
 document.getElementById('ipllogo').src = DEFAULT_IPL_LOGO;
-document.getElementById('oppsmalllogo').src = match.img2 || DEFAULT_LOGO;
+document.getElementById('oppsmalllogo').src = match.img2;
+
+// महत्वपूर्ण डिटेल्स (टीम, समय, स्टेडियम)
 document.getElementById('matchno').textContent = `OFFICIAL TICKET | ${ticketData.seatType.toUpperCase()} | MATCH ${matchNo}`;
 document.getElementById('teamstext').textContent = match.teams;
 document.getElementById('datetext').textContent = `DATE: ${match.date} | GATES OPEN: ${entryTime}`;
