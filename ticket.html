@@ -172,44 +172,69 @@ body {
 <button id="downloadbtn">DOWNLOAD OFFICIAL E-TICKET</button>
 
 <script>
-// --- Ticket Data ---
+// --- Ticket Data Initialization ---
 const DEFAULT_LOGO = "https://iili.io/K8L5Ots.jpg";
 const DEFAULT_IPL_LOGO = "https://upload.wikimedia.org/wikipedia/commons/3/3a/Indian_Premier_League_logo.svg";
 
-const updatedTicket = {
-  matchDetails: {
-    teams: "Chennai Super Kings vs Mumbai Indians",
-    stadium: "Wankhede Stadium, Mumbai",
-    date: "2025-10-25",
-    time: "19:30",
-    img1: "https://iili.io/K8L5Ots.jpg",
-    img2: "https://iili.io/Jc8702V.png"
-  },
-  price: 2500,
-  qty: 1,
-  total: 2950,
-  seatType: "VIP",
-  bookingId: "BMS123999",
-  utr: "1234567890"
+let ticketData = null;
+const urlParams = new URLSearchParams(window.location.search);
+const bookingId = urlParams.get('bookingId');
+
+// Fallback/Default Data
+const defaultTicketData = {
+    matchDetails: {
+        teams: "Delhi Capitals vs Royal Challengers Bangalore",
+        stadium: "Feroz Shah Kotla, Delhi",
+        date: "2025-04-10",
+        time: "20:00",
+        img1: "https://iili.io/Jc8702V.png",
+        img2: "https://iili.io/K8L5Ots.jpg"
+    },
+    price: 1500,
+    qty: 1,
+    total: 1900,
+    seatType: "General",
+    bookingId: "DUMMY123",
+    utr: "000000000000",
+    seatDetails: {
+      GATE: "05",
+      ZONE: "NORTH",
+      TIER_BLOCK: "L1",
+      ROW: "D",
+      SEAT_NO: "025",
+      matchNo: "15"
+    }
 };
 
-localStorage.setItem('finalTicket', JSON.stringify(updatedTicket));
-const ticketData = JSON.parse(localStorage.getItem('finalTicket'));
+// Function to load the ticket data
+function loadTicketData() {
+    // 1. Try to load from the correct localStorage key ('finalTicket') set by the payment page
+    let loadedData = JSON.parse(localStorage.getItem('finalTicket'));
+
+    // 2. Validate the loaded data
+    if (loadedData && (!bookingId || loadedData.bookingId === bookingId)) {
+        return loadedData;
+    }
+    
+    // 3. Fallback to default data if validation fails
+    console.warn("Could not find current ticket data, loading default/dummy data.");
+    return defaultTicketData;
+}
+
+ticketData = loadTicketData();
+
+if (!ticketData || !ticketData.seatDetails) {
+    alert("❌ Ticket data is missing or incomplete. Redirecting to home.");
+    // window.location.href = "index.html"; // Uncomment for redirect
+}
+
+
+// Destructure required data
 const match = ticketData.matchDetails;
+const seats = ticketData.seatDetails;
 const teamsArray = match.teams.split(" vs ");
 const team1Name = teamsArray[0] || "Team 1";
 const team2Name = teamsArray[1] || "Team 2";
-
-// Random seat/gate
-const ZONES = ["NORTH", "SOUTH", "EAST", "WEST"];
-const TIERS_PREFIX = ["LOWER", "UPPER", "EXECUTIVE"];
-const ROW_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-const GATE = (Math.floor(Math.random() * 8) + 1).toString().padStart(2,"0");
-const ZONE = ZONES[Math.floor(Math.random() * ZONES.length)];
-const TIER_BLOCK = TIERS_PREFIX[Math.floor(Math.random() * TIERS_PREFIX.length)].substring(0,1)+ (Math.floor(Math.random()*5)+1); 
-const ROW = ROW_LETTERS[Math.floor(Math.random()*ROW_LETTERS.length)];
-const SEAT_NO = (Math.floor(Math.random()*50)+1).toString().padStart(3,"0");
 
 // Match Start and Entry Time
 let matchStart = 'N/A';
@@ -222,16 +247,22 @@ if(match.date && match.time){
     }
 }
 
-// Ticket Numbers
-const matchNo = (Math.floor(Math.random()*50)+1).toString().padStart(2,"0");
+// Seat/Ticket Numbers
+const matchNo = seats.matchNo;
+const ZONE = seats.ZONE;
+const TIER_BLOCK = seats.TIER_BLOCK;
+const ROW = seats.ROW;
+const SEAT_NO = seats.SEAT_NO;
+const GATE = seats.GATE;
+
 const ticketNo = `M${matchNo}-${ZONE.substring(0,1)}${TIER_BLOCK}-${ROW}${SEAT_NO}`;
 const qrDataContent = `TKT-${ticketNo}-${ticketData.qty}-${match.date}-${ticketData.bookingId.slice(-6)}`;
 const uniqueBarcodeData = ticketData.utr;
 
 // Price Breakdown
 const basePrice = ticketData.price;
-const taxesAndFees = Math.round(basePrice*0.18);
-const finalTotal = basePrice*ticketData.qty;
+const taxesAndFees = Math.round(ticketData.total - (basePrice * ticketData.qty)); 
+const finalTotal = ticketData.total;
 
 // Apply VIP Style if needed
 const ticketElement = document.getElementById('ticket');
@@ -239,13 +270,15 @@ if(ticketData.seatType.toLowerCase().includes('vip')){
     ticketElement.classList.add('vip-style');
 }
 
+// --- Display Data ---
+
 // Header Metadata
 document.getElementById('sr-left').textContent = ticketNo;
 document.getElementById('sr-right').textContent = `Match ${matchNo}`;
 document.getElementById('roll-right').textContent = ticketData.qty;
 document.getElementById('code-left').textContent = `A${ticketNo.substring(ticketNo.length-6)}`;
 document.getElementById('ticketcode').textContent = qrDataContent.slice(0,15)+'...';
-document.getElementById('basepricetext').textContent = `₹${basePrice} + ₹${taxesAndFees} (TAXES)`;
+document.getElementById('basepricetext').textContent = `₹${basePrice} x ${ticketData.qty} = ₹${basePrice * ticketData.qty} + ₹${taxesAndFees} (TAXES)`;
 document.getElementById('bookingid').textContent = ticketData.bookingId || 'N/A';
 document.getElementById('totalprice').textContent = finalTotal;
 
