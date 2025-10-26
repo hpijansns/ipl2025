@@ -176,11 +176,7 @@ body {
 const DEFAULT_LOGO = "https://iili.io/K8L5Ots.jpg";
 const DEFAULT_IPL_LOGO = "https://upload.wikimedia.org/wikipedia/commons/3/3a/Indian_Premier_League_logo.svg";
 
-let ticketData = null;
-const urlParams = new URLSearchParams(window.location.search);
-const bookingId = urlParams.get('bookingId');
-
-// Fallback/Default Data
+// Fallback/Default Data (only used if nothing is found in local storage)
 const defaultTicketData = {
     matchDetails: {
         teams: "Delhi Capitals vs Royal Challengers Bangalore",
@@ -206,26 +202,12 @@ const defaultTicketData = {
     }
 };
 
-// Function to load the ticket data
-function loadTicketData() {
-    // 1. Try to load from the correct localStorage key ('finalTicket') set by the payment page
-    let loadedData = JSON.parse(localStorage.getItem('finalTicket'));
-
-    // 2. Validate the loaded data
-    if (loadedData && (!bookingId || loadedData.bookingId === bookingId)) {
-        return loadedData;
-    }
-    
-    // 3. Fallback to default data if validation fails
-    console.warn("Could not find current ticket data, loading default/dummy data.");
-    return defaultTicketData;
-}
-
-ticketData = loadTicketData();
+// **मुख्य परिवर्तन:** हम सीधे 'finalTicket' से डेटा लोड कर रहे हैं।
+let ticketData = JSON.parse(localStorage.getItem('finalTicket'));
 
 if (!ticketData || !ticketData.seatDetails) {
-    alert("❌ Ticket data is missing or incomplete. Redirecting to home.");
-    // window.location.href = "index.html"; // Uncomment for redirect
+    console.warn("Could not find ticket data in finalTicket key, loading default data.");
+    ticketData = defaultTicketData;
 }
 
 
@@ -247,7 +229,7 @@ if(match.date && match.time){
     }
 }
 
-// Seat/Ticket Numbers
+// Seat/Ticket Numbers (अब 'seats' ऑब्जेक्ट से आ रहे हैं)
 const matchNo = seats.matchNo;
 const ZONE = seats.ZONE;
 const TIER_BLOCK = seats.TIER_BLOCK;
