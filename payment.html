@@ -42,12 +42,10 @@ button#payWithUTR:hover{background:linear-gradient(90deg,#43a047,#388e3c);}
   </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <script>
-// --- DEMO DATA SETUP ---
-// यह डेटा 'सीट चयन' पेज से आएगा। इसे हम यहाँ केवल परीक्षण के लिए सेट कर रहे हैं।
+// --- DEMO DATA SETUP (Using sessionStorage for cross-page persistence in local files) ---
+const DEMO_KEY = 'currentBookingData';
+
 const demoTicketData = {
     matchDetails: {
         teams: "Chennai Super Kings vs Mumbai Indians",
@@ -62,18 +60,16 @@ const demoTicketData = {
     total: 5900, 
     seatType: "VIP",
 };
-localStorage.setItem('paymentInfo', JSON.stringify(demoTicketData));
+// Save demo data to sessionStorage to ensure it exists on page load
+sessionStorage.setItem(DEMO_KEY, JSON.stringify(demoTicketData));
 // --- END DEMO DATA SETUP ---
 
 
-// Firebase config (Uncomment and replace with actual config if needed)
-// const firebaseConfig = { /* ... */ };
-// firebase.initializeApp(firebaseConfig);
-// const db = firebase.database(); 
-
-const ticketData = JSON.parse(localStorage.getItem('paymentInfo'));
+// Load selected ticket from sessionStorage
+const ticketData = JSON.parse(sessionStorage.getItem(DEMO_KEY));
 if(!ticketData){ 
   alert("❌ कोई डेटा नहीं मिला, कृपया फिर से मैच बुक करें।");
+  // window.location.href="match-details.html"; 
 }
 
 const DEFAULT_LOGO = "https://iili.io/K8L5Ots.jpg";
@@ -99,7 +95,7 @@ document.getElementById('payWithUTR').addEventListener('click', ()=>{
       return;
   }
 
-  // Generate SEAT DETAILS (MUST BE DONE HERE TO PASS TO TICKET PAGE)
+  // Generate SEAT DETAILS
   const ZONES = ["NORTH", "SOUTH", "EAST", "WEST"];
   const TIERS_PREFIX = ["LOWER", "UPPER", "EXECUTIVE"];
   const ROW_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -117,10 +113,10 @@ document.getElementById('payWithUTR').addEventListener('click', ()=>{
   ticketData.utr = utr;
   ticketData.bookingId = 'IPL' + Date.now().toString().slice(-8); 
 
-  // Store final data in the correct key for the ticket page
-  localStorage.setItem('finalTicket', JSON.stringify(ticketData));
+  // Store FINAL data in sessionStorage to ensure the next page can read it
+  sessionStorage.setItem(DEMO_KEY, JSON.stringify(ticketData));
   
-  // Redirect to ticket page with booking ID
+  // Redirect to ticket page
   alert(`✅ Payment Successful! Booking ID: ${ticketData.bookingId}`);
   window.location.href = `ticket.html?bookingId=${ticketData.bookingId}`;
 });
