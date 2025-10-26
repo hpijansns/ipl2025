@@ -203,7 +203,7 @@ const defaultTicketData = {
     }
 };
 
-// **मुख्य परिवर्तन:** हम sessionStorage से डेटा लोड कर रहे हैं।
+// हम sessionStorage से डेटा लोड कर रहे हैं।
 let ticketData = JSON.parse(sessionStorage.getItem(DEMO_KEY));
 
 if (!ticketData || !ticketData.seatDetails) {
@@ -230,7 +230,7 @@ if(match.date && match.time){
     }
 }
 
-// Seat/Ticket Numbers (अब 'seats' ऑब्जेक्ट से आ रहे हैं)
+// Seat/Ticket Numbers 
 const matchNo = seats.matchNo;
 const ZONE = seats.ZONE;
 const TIER_BLOCK = seats.TIER_BLOCK;
@@ -244,7 +244,6 @@ const uniqueBarcodeData = ticketData.utr;
 
 // Price Breakdown
 const basePrice = ticketData.price;
-// Taxes/Fees calculation using the total price saved from the payment page
 const taxesAndFees = Math.round(ticketData.total - (basePrice * ticketData.qty)); 
 const finalTotal = ticketData.total;
 
@@ -312,7 +311,6 @@ document.getElementById('downloadbtn').addEventListener('click',()=>{
         link.href = canvas.toDataURL('image/png');
         link.download = `IPL_E-TICKET_${ticketNo}.png`;
         link.click();
-        // sessionStorage.removeItem(DEMO_KEY); // Remove data after download
         document.getElementById('downloadbtn').style.display='block';
     });
 });
