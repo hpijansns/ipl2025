@@ -47,45 +47,33 @@ button#payWithUTR:hover{background:linear-gradient(90deg,#43a047,#388e3c);}
 
 <script>
 // --- DEMO DATA SETUP ---
-// यह डेटा आमतौर पर पिछले 'सीट चयन' पेज से आएगा। 
-// इसे मैंने यहाँ सेट किया है ताकि यह पेज अकेले काम कर सके।
+// यह डेटा 'सीट चयन' पेज से आएगा। इसे हम यहाँ केवल परीक्षण के लिए सेट कर रहे हैं।
 const demoTicketData = {
     matchDetails: {
         teams: "Chennai Super Kings vs Mumbai Indians",
         stadium: "Wankhede Stadium, Mumbai",
         date: "2025-10-25",
         time: "19:30",
-        img1: "https://iili.io/K8L5Ots.jpg", // CSK Logo
-        img2: "https://iili.io/Jc8702V.png"  // MI Logo
+        img1: "https://iili.io/K8L5Ots.jpg", 
+        img2: "https://iili.io/Jc8702V.png"  
     },
-    price: 2500, // Base Price
-    qty: 2,      // Quantity
-    total: 5900, // Total Amount including taxes/fees
+    price: 2500, 
+    qty: 2,      
+    total: 5900, 
     seatType: "VIP",
-    // bookingId and UTR will be added on successful payment
 };
 localStorage.setItem('paymentInfo', JSON.stringify(demoTicketData));
 // --- END DEMO DATA SETUP ---
 
 
-// Firebase config (Replace with your actual Firebase config)
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://pl-project-f9be7-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
-// firebase.initializeApp(firebaseConfig); // Uncomment if using Firebase
-// const db = firebase.database(); // Uncomment if using Firebase
+// Firebase config (Uncomment and replace with actual config if needed)
+// const firebaseConfig = { /* ... */ };
+// firebase.initializeApp(firebaseConfig);
+// const db = firebase.database(); 
 
-// Load selected ticket from localStorage
 const ticketData = JSON.parse(localStorage.getItem('paymentInfo'));
 if(!ticketData){ 
   alert("❌ कोई डेटा नहीं मिला, कृपया फिर से मैच बुक करें।");
-  // window.location.href="match-details.html"; // Uncomment for redirect
 }
 
 const DEFAULT_LOGO = "https://iili.io/K8L5Ots.jpg";
@@ -111,7 +99,7 @@ document.getElementById('payWithUTR').addEventListener('click', ()=>{
       return;
   }
 
-  // Generate unique seat details (SHOULD BE DONE ON SERVER/FIREBASE)
+  // Generate SEAT DETAILS (MUST BE DONE HERE TO PASS TO TICKET PAGE)
   const ZONES = ["NORTH", "SOUTH", "EAST", "WEST"];
   const TIERS_PREFIX = ["LOWER", "UPPER", "EXECUTIVE"];
   const ROW_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -129,24 +117,10 @@ document.getElementById('payWithUTR').addEventListener('click', ()=>{
   ticketData.utr = utr;
   ticketData.bookingId = 'IPL' + Date.now().toString().slice(-8); 
 
-  // Store final data for the ticket page
+  // Store final data in the correct key for the ticket page
   localStorage.setItem('finalTicket', JSON.stringify(ticketData));
   
-  // --- Start Firebase/Server Save Logic (UNCOMMENT IF USED) ---
-  /* db.ref('bookings/' + ticketData.bookingId).set(ticketData)
-    .then(()=>{
-        alert(`✅ Payment Successful! Booking ID: ${ticketData.bookingId}`);
-        window.location.href = `ticket.html?bookingId=${ticketData.bookingId}`;
-    })
-    .catch((err)=>{
-        console.error(err);
-        alert("❌ Payment save failed, trying to redirect using local data.");
-        window.location.href = `ticket.html?bookingId=${ticketData.bookingId}`; // Fallback redirect
-    });
-  */
-  // --- End Firebase/Server Save Logic ---
-
-  // For this local environment, we just redirect after saving to a *different* local storage key
+  // Redirect to ticket page with booking ID
   alert(`✅ Payment Successful! Booking ID: ${ticketData.bookingId}`);
   window.location.href = `ticket.html?bookingId=${ticketData.bookingId}`;
 });
