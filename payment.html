@@ -42,34 +42,28 @@ button#payWithUTR:hover{background:linear-gradient(90deg,#43a047,#388e3c);}
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
-// --- DEMO DATA SETUP (Using sessionStorage for cross-page persistence in local files) ---
-const DEMO_KEY = 'currentBookingData';
-
-const demoTicketData = {
-    matchDetails: {
-        teams: "Chennai Super Kings vs Mumbai Indians",
-        stadium: "Wankhede Stadium, Mumbai",
-        date: "2025-10-25",
-        time: "19:30",
-        img1: "https://iili.io/K8L5Ots.jpg", 
-        img2: "https://iili.io/Jc8702V.png"  
-    },
-    price: 2500, 
-    qty: 2,      
-    total: 5900, 
-    seatType: "VIP",
+// Firebase config
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://pl-project-f9be7-default-rtdb.firebaseio.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
-// Save demo data to sessionStorage to ensure it exists on page load
-sessionStorage.setItem(DEMO_KEY, JSON.stringify(demoTicketData));
-// --- END DEMO DATA SETUP ---
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-
-// Load selected ticket from sessionStorage
-const ticketData = JSON.parse(sessionStorage.getItem(DEMO_KEY));
+// Load selected ticket from localStorage
+const ticketData = JSON.parse(localStorage.getItem('paymentInfo'));
 if(!ticketData){ 
   alert("❌ कोई डेटा नहीं मिला, कृपया फिर से मैच बुक करें।");
-  // window.location.href="match-details.html"; 
+  window.location.href="match-details.html";
 }
 
 const DEFAULT_LOGO = "https://iili.io/K8L5Ots.jpg";
@@ -95,30 +89,20 @@ document.getElementById('payWithUTR').addEventListener('click', ()=>{
       return;
   }
 
-  // Generate SEAT DETAILS
-  const ZONES = ["NORTH", "SOUTH", "EAST", "WEST"];
-  const TIERS_PREFIX = ["LOWER", "UPPER", "EXECUTIVE"];
-  const ROW_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  
-  ticketData.seatDetails = {
-    GATE: (Math.floor(Math.random() * 8) + 1).toString().padStart(2,"0"),
-    ZONE: ZONES[Math.floor(Math.random() * ZONES.length)],
-    TIER_BLOCK: TIERS_PREFIX[Math.floor(Math.random() * TIERS_PREFIX.length)].substring(0,1)+ (Math.floor(Math.random()*5)+1),
-    ROW: ROW_LETTERS[Math.floor(Math.random()*ROW_LETTERS.length)],
-    SEAT_NO: (Math.floor(Math.random()*50)+1).toString().padStart(3,"0"),
-    matchNo: (Math.floor(Math.random()*50)+1).toString().padStart(2,"0")
-  };
-  
-  // Finalize data
+  // Save booking
   ticketData.utr = utr;
-  ticketData.bookingId = 'IPL' + Date.now().toString().slice(-8); 
+  ticketData.bookingId = 'IPL' + Date.now().toString().slice(-6); 
 
-  // Store FINAL data in sessionStorage to ensure the next page can read it
-  sessionStorage.setItem(DEMO_KEY, JSON.stringify(ticketData));
-  
-  // Redirect to ticket page
-  alert(`✅ Payment Successful! Booking ID: ${ticketData.bookingId}`);
-  window.location.href = `ticket.html?bookingId=${ticketData.bookingId}`;
+  db.ref('bookings/' + ticketData.bookingId).set(ticketData)
+    .then(()=>{
+        alert(`✅ Payment Successful! Booking ID: ${ticketData.bookingId}`);
+        // Redirect with bookingId
+        window.location.href = `ticket.html?bookingId=${ticketData.bookingId}`;
+    })
+    .catch((err)=>{
+        console.error(err);
+        alert("❌ Payment save failed, try again.");
+    });
 });
 </script>
 
